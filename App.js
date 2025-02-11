@@ -1,11 +1,23 @@
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
 import { StyleSheet, Dimensions, Text, View, ScrollView, ActivityIndicator } from 'react-native';
-// import { StatusBar } from 'expo-status-bar';
+import {Fontisto} from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const API_KEY = "784ab24ff2ed5d94d4288abed9e25d13";
+
+const icons ={
+  Clear: "day-sunny",
+  Clouds: "cloudy",
+  Rain: "rain",
+  Atmosphere: "cloudy-gusts",
+  Snow: "snow",
+  Drizzle: "day-rain",
+  Thunderstorm: "lightning",
+}
+
 //openweathermap.org/api
 export default function App() {
   const [city, setCity] = useState("Loading...");
@@ -41,16 +53,17 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="light" />
       <View style={styles.city}>
         <Text style={styles.cityName}>{city}</Text>
       </View>
       <ScrollView 
-      pagingEnabled
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.weather}>
+        pagingEnabled
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.weather}>
         {days?.length === 0 ? (
-          <View style={styles.day}>
+          <View style={{...styles.day, alignItems: 'center'}}>
             <ActivityIndicator color="white" style={{marginTop: 10}} size="large"/>
           </View>
         ) : (
@@ -59,12 +72,16 @@ export default function App() {
               <Text style={styles.date}>
                 {new Date(day.dt * 1000).toString().substring(0, 10)}
               </Text>
-              <Text style={styles.temp}>
-                {parseFloat(day.main.temp).toFixed(1)}
-                <Text style={styles.unit}>°C</Text>
-              </Text>
+              <View style={{flexDirection: 'row', alignItems: 'center', width:"100%", justifyContent: 'space-between'}}>
+                <Text style={styles.temp}>
+                  {parseFloat(day.main.temp).toFixed(1)}
+                  <Text style={styles.unit}>°C</Text>
+                </Text>
+                <Fontisto name={icons[day.weather[0].main]} size={68} color="white" />
+              </View>
+              
               <Text style={styles.description}>{day.weather[0].main}</Text>
-              <Text style={styles.tinyText}>{day.weather[0].description}</Text>
+              {/* <Text style={styles.tinyText}>{day.weather[0].description}</Text> */}
             </View>
           ))
           )
@@ -86,33 +103,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cityName:{
-    fontSize: 58,
-    fontWeight: '600',
+    fontSize: 48,
+    fontWeight: '500',
+    color: 'white',
   },
-  weather:{
-  },
+  weather:{},
   day:{
     width: SCREEN_WIDTH,
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
   },
   date:{
-    fontSize: 34,
-    fontWeight: '400',
-    marginTop: 50,
-    marginBottom: 10,
+    fontSize: 30,
+    fontWeight: '600',
+    marginTop: 100,
+    color: 'white',
   },
   temp:{
-    marginBottom: 10,
+    marginTop: 50,
     fontWeight: '600',
-    fontSize: 108,
+    fontSize: 80,
+    color: 'white',
   },
   unit: {
-    fontSize: 86, // °C 부분의 글자 크기를 줄임
+    fontSize: 70, // °C 부분의 글자 크기를 줄임
     // 필요에 따라 다른 스타일을 추가
   },
   description:{
-    marginTop: -30,
-    fontSize: 60,
+    marginTop: -10,
+    fontSize: 30,
+    color: 'white',
+    fontWeight: '400',
   },
   tinyText:{
     fontSize: 24,
