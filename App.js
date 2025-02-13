@@ -9,9 +9,27 @@ const SCREEN_WIDTH = Dimensions.get("window").width;
 
 export default function App() {
   const [working, setWorking] = useState(true);
+  const [text, setText] = useState("");
+  const[toDos, setToDos] = useState({});
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
-
+  //event나 target이 없음
+  const onChangeText = (payload) => setText(payload);
+  const addToDo =() =>{
+    if(text === ""){
+      return;
+    }
+    const newToDos = Object.assign(
+      {},
+      toDos,
+      {
+        [Date.now()]: {text, work: working},
+      });
+    setToDos(newToDos)
+    setText("");
+    
+  }
+  console.log(toDos)
 
 
   return (
@@ -27,9 +45,14 @@ export default function App() {
       </View>
       <View>
         <TextInput 
-        returnKeyType="send"
-        style={styles.input} 
-        placeholder="Search..." />
+          // secureTextEntry : 비밀번호 입력 사용 암호화
+          // multiline : 말그대로 멀티라인 한줄 이상 텍스트 입력
+          onSubmitEditing={addToDo}
+          onChangeText={onChangeText}
+          returnKeyType="done"
+          value={text}
+          placeholder={"Search..."}
+          style={styles.input} />
       </View>
 
     </View>
