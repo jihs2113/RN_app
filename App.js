@@ -1,36 +1,65 @@
 import { useState, useEffect } from 'react';
 import * as Location from 'expo-location';
-import { StyleSheet, Dimensions, TextInput, Text, View, ScrollView,TouchableHighlight, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, Dimensions, TextInput, Text, View, ScrollView,TouchableHighlight, ActivityIndicator, TouchableOpacity,Alert } from 'react-native';
 import {Fontisto} from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import {theme} from './colors';
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
+const STORAGE_KEY = "@toDos";
+
 export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const[toDos, setToDos] = useState({});
+    useEffect(() => {
+    loadToDos();
+  },[])
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
   //event나 target이 없음
   const onChangeText = (payload) => setText(payload);
+  const saveToDos = async(toSave) =>{
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave))
+  }
+  const loadToDos = async() =>{
+    const s = await AsyncStorage.getItem(STORAGE_KEY)
+    setToDos(JSON.parse(s))
+  }
+
   const addToDo =() =>{
     if(text === ""){
       return;
     }
-    const newToDos = Object.assign(
-      {},
-      toDos,
-      {
-        [Date.now()]: {text, work: working},
-      });
+    const newToDos = {
+      ...toDos,
+      [Date.now()]: {text, working},
+    }
     setToDos(newToDos)
+    saveToDos(newToDos)
     setText("");
+
+  }
+
+  const deleteToDo =(key) =>{
+    Alert.alert(
+      "Delete To Do",
+      "Are you sure?",[
+        {text: "Cancel"},
+        {text: "I'm Sure", 
+          style: "destructive",
+          onPress: () => {
+          const newToDos = {...toDos};
+          delete newToDos[key]
+          setToDos(newToDos)
+          saveToDos(newToDos)
+        },
+        },
+      ]);
+    return;
     
   }
-  console.log(toDos)
-
 
   return (
     <View style={styles.container}>
@@ -51,10 +80,21 @@ export default function App() {
           onChangeText={onChangeText}
           returnKeyType="done"
           value={text}
-          placeholder={"Search..."}
+          placeholder={working ? "Add a To Do" : "Where do you want to go?"}
           style={styles.input} />
       </View>
-
+      <ScrollView>
+        {Object.keys(toDos).map((key) => 
+          toDos[key].working === working ? (
+          <View key={key} style={styles.toDo}>
+            <Text style={styles.toDoText}>{toDos[key].text}</Text>
+            <TouchableOpacity onPress={() => deleteToDo(key)}>
+            <Fontisto name="trash" size={26} color="black"/>
+            </TouchableOpacity>
+          </View>
+        ) : null
+      )}
+      </ScrollView>
     </View>
   );
 }
@@ -80,8 +120,27 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 30,
-    marginTop: 20,
+    marginVertical: 20,
     fontSize: 18,
+  },
+  toDo:{
+    backgroundColor: theme.grey,
+    marginBottom: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  toDoText:{
+    color: "white",
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  toDelete:{
+    fontSize: 20,
+    fontWeight: '600',
   }
  
 });
