@@ -4,6 +4,7 @@ import { StyleSheet, Dimensions, TextInput, Text, View, ScrollView,TouchableHigh
 import {Fontisto} from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import {theme} from './colors';
+import Checkbox from 'expo-checkbox';
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
@@ -12,10 +13,13 @@ const STORAGE_KEY = "@toDos";
 export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
-  const[toDos, setToDos] = useState({});
-    useEffect(() => {
+  const [toDos, setToDos] = useState({});
+  const [isChecked, setChecked] = useState(false);
+
+  useEffect(() => {
     loadToDos();
   },[])
+  
   const travel = () => setWorking(false);
   const work = () => setWorking(true);
   //event나 target이 없음
@@ -28,19 +32,31 @@ export default function App() {
     setToDos(JSON.parse(s))
   }
 
+  const toggleChecked =(key) =>{
+    setToDos((prev) => ({
+      ...prev,
+      [key]:{
+        ...prev[key],
+        isChecked: !prev[key].isChecked,
+      }
+    }))
+  }
+
   const addToDo =() =>{
     if(text === ""){
       return;
     }
     const newToDos = {
       ...toDos,
-      [Date.now()]: {text, working},
+      [Date.now()]: {text, working, isChecked},
     }
     setToDos(newToDos)
     saveToDos(newToDos)
     setText("");
-
+    console.log(newToDos)
   }
+
+  console.log(toDos)
 
   const deleteToDo =(key) =>{
     Alert.alert(
@@ -58,7 +74,6 @@ export default function App() {
         },
       ]);
     return;
-    
   }
 
   return (
@@ -88,9 +103,16 @@ export default function App() {
           toDos[key].working === working ? (
           <View key={key} style={styles.toDo}>
             <Text style={styles.toDoText}>{toDos[key].text}</Text>
-            <TouchableOpacity onPress={() => deleteToDo(key)}>
-            <Fontisto name="trash" size={26} color="black"/>
-            </TouchableOpacity>
+            <View key={key} style={styles.icons}>
+              <TouchableOpacity >
+                <Checkbox style={styles.checkbox} value={toDos[key].isChecked}
+                  onValueChange={() => toggleChecked(key)}
+                  color={toDos[key].isChecked ? '#4630EB' : undefined} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteToDo(key)}>
+                <Fontisto name="trash" size={26} color="black"/>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : null
       )}
@@ -138,9 +160,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  icons:{
+    flexDirection: "row",
+    alignItems: "center",
+    // justifyContent: "space-between",
+  },
   toDelete:{
     fontSize: 20,
     fontWeight: '600',
-  }
+  },
+  checkbox: {
+    marginRight: 20,
+  },
  
 });
